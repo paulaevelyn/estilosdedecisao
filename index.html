@@ -264,6 +264,60 @@
     margin-bottom: 22px;
   }
 
+  /* ── DICAS PERSONALIZADAS ─────────────────────────── */
+  .tips-section {
+    margin: 4px 0 24px;
+  }
+  .tips-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 16.5px;
+    color: var(--mint);
+    margin-bottom: 14px;
+  }
+  .tip-card {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .tip-card:first-child { border-top: none; padding-top: 0; }
+  .tip-num {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--coral-tint);
+    color: var(--coral);
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tip-body { flex: 1; }
+  .tip-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--graphite);
+    margin-bottom: 4px;
+  }
+  .tip-card-desc {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .tips-closing {
+    font-size: 12.5px;
+    font-style: italic;
+    color: var(--ink-soft);
+    opacity: 0.8;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+
   .result-actions {
     display: flex;
     flex-direction: column;
@@ -295,9 +349,58 @@
     .scale-opt { font-size: 11px; }
     .card { padding: 22px 18px; }
   }
+
+  /* ── CAMPO DE NOME (RELATÓRIO) ─────────────────────── */
+  .report-field { margin-bottom: 14px; }
+  .report-field-label {
+    display: block;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .report-input {
+    width: 100%;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    background: white;
+  }
+  .report-input:focus { outline: none; border-color: var(--coral); }
+
+  /* ── RELATÓRIO PARA IMPRESSÃO (oculto na tela) ────── */
+  .print-only { display: none; }
+
+  .pr-header { border-bottom: 2px solid var(--coral); padding-bottom: 14px; margin-bottom: 22px; }
+  .pr-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin-bottom: 6px; }
+  .pr-title { font-family: 'Playfair Display', serif; font-size: 22px; margin: 0 0 8px; color: #111; }
+  .pr-meta { font-size: 12px; color: #444; }
+  .pr-section { margin-bottom: 20px; }
+  .pr-section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mint); font-weight: 700; margin-bottom: 8px; }
+  .pr-score-line { font-size: 14px; color: #222; margin-bottom: 10px; }
+  .pr-band-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 17px; color: var(--coral); margin-bottom: 8px; }
+  .pr-section p { font-size: 13px; line-height: 1.6; color: #222; margin: 0 0 10px; }
+  .pr-note { font-size: 11.5px; line-height: 1.6; color: #444; border-top: 1px solid #ccc; padding-top: 14px; margin-top: 20px; }
+  .pr-citation { font-size: 10.5px; color: #777; margin-top: 14px; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #printReport, #printReport * { visibility: visible; }
+    #printReport {
+      display: block !important;
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%;
+      padding: 20px;
+    }
+  }
 </style>
 </head>
 <body>
+
+<div id="printReport" class="print-only"></div>
 
 <div class="wrap">
 
@@ -335,11 +438,22 @@
       <div class="result-title" id="resultTitle"></div>
       <div class="result-text" id="resultText"></div>
 
+      <div class="tips-section" id="tipsSection">
+        <div class="tips-title" id="tipsTitle"></div>
+        <div id="tipsList"></div>
+        <div class="tips-closing" id="tipsClosing"></div>
+      </div>
+
       <div class="result-note">
         Lembre-se: isso descreve uma tendência de resposta neste momento, não um traço fixo nem um diagnóstico. A forma como você decide pode mudar conforme o contexto, o nível de cansaço e o que está em jogo na escolha.
       </div>
 
       <div class="result-actions">
+        <div class="report-field">
+          <label for="reportName" class="report-field-label">Nome (opcional, aparece só no relatório que você baixar)</label>
+          <input type="text" id="reportName" class="report-input" placeholder="Seu nome">
+        </div>
+        <button class="btn btn-primary btn-block" id="downloadBtn">Baixar relatório para sua psicóloga</button>
         <button class="btn btn-outline btn-block" id="restartBtn">Refazer o teste</button>
       </div>
 
@@ -430,6 +544,7 @@
     document.getElementById('nextBtn').textContent = index === questions.length - 1 ? 'Ver resultado' : 'Próxima';
     document.getElementById('nextBtn').disabled = answers[index] === null;
     updateProgress();
+    sendHeightToParent();
   }
 
   document.getElementById('nextBtn').addEventListener('click', () => {
@@ -448,6 +563,46 @@
     }
   });
 
+  const resultsData = {
+    low: {
+      title: 'Seu padrão parece mais próximo do satisficer',
+      text: 'Você costuma decidir e seguir em frente sem revisitar a escolha com frequência. Isso não significa critério raso, significa que sua relação com a incerteza pós-decisão tende a ser mais leve. Vale observar se essa leveza é consistente em todas as áreas da vida, ou se existe algum contexto específico (dinheiro, saúde, relações) onde ela desaparece e a busca pela opção perfeita toma o lugar dela.',
+      tipsTitle: 'Pontos para observar com curiosidade',
+      tips: [
+        { title: 'Calibre pelo peso da decisão', desc: 'Fechar rápido funciona bem na maioria dos casos, mas vale parar mais um pouco diante de decisões raras e difíceis de reverter, como um contrato grande ou uma mudança de cidade.' },
+        { title: 'Diferencie pressa de clareza', desc: 'Às vezes fechar rápido é clareza genuína. Outras vezes é evitar o desconforto de olhar a decisão de perto. Vale notar qual dos dois está acontecendo antes de decidir.' },
+        { title: 'Reconheça o que sustenta essa leveza', desc: 'Sua relação tranquila com a incerteza pós-decisão é um recurso real. Observar de onde ela vem, segurança, experiência, autoconfiança, ajuda a sustentá-la em fases mais difíceis.' }
+      ],
+      closing: 'Estas não são correções. São apenas pontos de atenção para um padrão que, no geral, já funciona bem para você.'
+    },
+    mid: {
+      title: 'Você transita entre os dois perfis',
+      text: 'Seu padrão de resposta sugere que você maximiza em algumas situações e satisfaz em outras, provavelmente dependendo do quanto a decisão parece reversível ou do quanto ela toca em áreas mais sensíveis da sua história. Isso é comum e, em geral, é mais sustentável do que maximizar tudo o tempo todo. O ponto de atenção é entender o que diferencia os dois modos em você.',
+      tipsTitle: 'Três experimentos para flexibilizar',
+      tips: [
+        { title: 'Nomeie a régua antes de procurar', desc: 'Antes de começar a comparar opções, escreva o que tornaria essa escolha boa o suficiente. Isso evita que o critério mude no meio da busca, o que é uma das principais fontes de indecisão prolongada.' },
+        { title: 'Combine o esforço com o tamanho da decisão', desc: 'Pergunte-se: isso é fácil de reverter? Se for, provavelmente não precisa do mesmo nível de investigação que uma decisão de via única, como mudar de carreira ou de cidade.' },
+        { title: 'Repare no gatilho', desc: 'Observe em quais áreas (trabalho, relações, compras, saúde) a busca pela opção perfeita aparece com mais força. Frequentemente é ali que mais está em jogo emocionalmente, não logisticamente.' }
+      ],
+      closing: 'Tente um experimento de cada vez, numa decisão de baixo risco, antes de aplicar em algo que importa mais.'
+    },
+    high: {
+      title: 'Seu padrão parece mais próximo do maximizador',
+      text: 'Suas respostas sugerem uma tendência mais forte a buscar exaustivamente a melhor opção e a continuar comparando depois de decidir. Isso não é falta de confiança em você, nem vaidade de querer o melhor. Frequentemente, é uma forma aprendida de se proteger do arrependimento, construída em algum momento em que escolher errado pareceu custar caro demais. Regulação, antes de técnica, costuma ser o ponto de partida mais honesto aqui.',
+      tipsTitle: 'Quatro experimentos para flexibilizar, com compaixão',
+      tips: [
+        { title: 'Defina o critério antes de pesquisar', desc: 'Antes de abrir o primeiro site ou conversar com a primeira pessoa, escreva três critérios que tornariam essa escolha suficientemente boa. Pesquisar já com um critério pronto reduz a comparação infinita.' },
+        { title: 'Coloque um limite de tempo e de opções', desc: 'Escolha, antes de começar, quantas alternativas você vai considerar e até quando. Por exemplo, três opções, até sexta-feira. O limite externo ajuda enquanto o limite interno ainda está se formando.' },
+        { title: 'Quando a comparação voltar depois de decidir, nomeie sem agir', desc: '"Lá está o pensamento de novo" costuma enfraquecer o ciclo mais do que tentar se convencer racionalmente de que escolheu certo.' },
+        { title: 'Pratique compaixão, não convencimento', desc: 'Se notar autocrítica depois de decidir, a pergunta útil não é "eu escolhi certo?", e sim "eu fui dura comigo de novo?". Regulação do sistema de ameaça vem antes de qualquer técnica de decisão.' }
+      ],
+      closing: 'Não tente aplicar os quatro pontos de uma vez. Escolha um, teste numa decisão pequena esta semana, e observe o que muda antes de seguir para o próximo.'
+    }
+  };
+
+  let lastBand = null;
+  let lastAvgRounded = null;
+
   function showResult() {
     const sum = answers.reduce((a, b) => a + b, 0);
     const avg = sum / answers.length;
@@ -462,19 +617,34 @@
     const percent = ((avg - 1) / 6) * 100;
     document.getElementById('gaugeMarker').style.left = percent + '%';
 
-    let title, text;
-    if (avg < 3.3) {
-      title = 'Seu padrão parece mais próximo do satisficer';
-      text = 'Você costuma decidir e seguir em frente sem revisitar a escolha com frequência. Isso não significa que você tenha critério raso, significa que sua relação com a incerteza pós-decisão tende a ser mais leve. Vale observar se isso é consistente em todas as áreas da vida ou se varia conforme o que está em jogo.';
-    } else if (avg < 5) {
-      title = 'Você transita entre os dois perfis';
-      text = 'Seu padrão de resposta sugere que você maximiza em algumas situações e satisfaz em outras, provavelmente dependendo do quanto a decisão parece reversível ou do quanto ela toca em áreas mais sensíveis da sua história. Vale observar em quais contextos a busca pela opção perfeita aparece com mais força.';
-    } else {
-      title = 'Seu padrão parece mais próximo do maximizador';
-      text = 'Suas respostas sugerem uma tendência mais forte a buscar exaustivamente a melhor opção e a continuar comparando depois de decidir. Isso não é falta de confiança em você. Muitas vezes é uma forma aprendida de se proteger do arrependimento. Vale a pena observar o que essa busca pela escolha perfeita pode estar tentando evitar.';
-    }
-    document.getElementById('resultTitle').textContent = title;
-    document.getElementById('resultText').textContent = text;
+    let band;
+    if (avg < 3.3) band = resultsData.low;
+    else if (avg < 5) band = resultsData.mid;
+    else band = resultsData.high;
+
+    lastBand = band;
+    lastAvgRounded = avgRounded;
+
+    document.getElementById('resultTitle').textContent = band.title;
+    document.getElementById('resultText').textContent = band.text;
+    document.getElementById('tipsTitle').textContent = band.tipsTitle;
+    document.getElementById('tipsClosing').textContent = band.closing;
+
+    const tipsList = document.getElementById('tipsList');
+    tipsList.innerHTML = '';
+    band.tips.forEach((tip, idx) => {
+      const card = document.createElement('div');
+      card.className = 'tip-card';
+      card.innerHTML =
+        '<div class="tip-num">' + (idx + 1) + '</div>' +
+        '<div class="tip-body">' +
+          '<div class="tip-card-title">' + tip.title + '</div>' +
+          '<div class="tip-card-desc">' + tip.desc + '</div>' +
+        '</div>';
+      tipsList.appendChild(card);
+    });
+
+    sendHeightToParent();
   }
 
   document.getElementById('restartBtn').addEventListener('click', () => {
@@ -486,7 +656,61 @@
     container.style.display = 'block';
     document.getElementById('navRow').style.display = 'flex';
     showScreen(0);
+    sendHeightToParent();
   });
+
+  // ── RELATÓRIO PARA DOWNLOAD (PDF VIA IMPRESSÃO) ─────
+  function buildPrintReport() {
+    if (!lastBand) return;
+
+    const name = document.getElementById('reportName').value.trim();
+    const dateStr = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    let tipsHtml = '';
+    lastBand.tips.forEach((tip, idx) => {
+      tipsHtml += '<p><strong>' + (idx + 1) + '. ' + tip.title + '.</strong> ' + tip.desc + '</p>';
+    });
+
+    document.getElementById('printReport').innerHTML =
+      '<div class="pr-header">' +
+        '<div class="pr-eyebrow">Psicoterapia e Afins &middot; Relatório de Autorreflexão</div>' +
+        '<h1 class="pr-title">Estilo de Decisão: Maximização e Satisfação</h1>' +
+        '<div class="pr-meta">' + (name ? 'Nome: ' + name + ' &middot; ' : '') + 'Data: ' + dateStr + '</div>' +
+      '</div>' +
+      '<div class="pr-section">' +
+        '<div class="pr-section-label">Resultado</div>' +
+        '<div class="pr-score-line">Média nas 12 afirmações: <strong>' + lastAvgRounded + ' / 7</strong></div>' +
+        '<div class="pr-band-title">' + lastBand.title + '</div>' +
+        '<p>' + lastBand.text + '</p>' +
+      '</div>' +
+      '<div class="pr-section">' +
+        '<div class="pr-section-label">Pontos para trabalhar em terapia</div>' +
+        tipsHtml +
+      '</div>' +
+      '<div class="pr-note"><strong>Nota para quem recebe este relatório:</strong> este documento foi gerado a partir de um instrumento informal de autorreflexão, adaptado a partir dos construtos descritos por Schwartz et al. (2002) sobre estilos de decisão (maximização versus satisfação). Não é uma escala validada em português nem um instrumento diagnóstico, e não substitui avaliação clínica. O objetivo é oferecer um ponto de partida para a conversa em sessão sobre o padrão de decisão da pessoa.</div>' +
+      '<div class="pr-citation">Schwartz, B., Ward, A., Monterosso, J., Lyubomirsky, S., White, K., &amp; Lehman, D. R. (2002). Maximizing versus satisficing: Happiness is a matter of choice. <em>Journal of Personality and Social Psychology, 83</em>(5), 1178&ndash;1197.</div>';
+  }
+
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    buildPrintReport();
+    window.print();
+  });
+
+  // ── AUTO-REDIMENSIONAMENTO PARA O IFRAME ────────────
+  // Avisa a página que está hospedando este iframe (o WordPress) sobre a
+  // altura real do conteúdo, para que o iframe nunca corte nem sobre espaço vazio.
+  function sendHeightToParent() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ source: 'pea-escala', height: height }, '*');
+  }
+
+  window.addEventListener('load', sendHeightToParent);
+  window.addEventListener('resize', sendHeightToParent);
+
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => sendHeightToParent());
+    ro.observe(document.body);
+  }
 
   showScreen(0);
 </script>
