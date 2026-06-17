@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escala de Tendência a Maximizar | Psicoterapia e Afins</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --coral: #D96C63;
+    --coral-soft: #F3DEDA;
+    --coral-tint: #FBF1EF;
+    --mint: #5E7D73;
+    --mint-soft: #DCE5E1;
+    --mint-tint: #F1F5F3;
+    --sand: #F5F0E8;
+    --graphite: #1C1C1C;
+    --ink: #2E2E2E;
+    --ink-soft: #5b5b56;
+    --line: #e4ddd0;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--sand);
+    font-family: 'Lato', sans-serif;
+    color: var(--ink);
+  }
+
+  .wrap {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 32px 24px 40px;
+  }
+
+  /* ── HEADER ───────────────────────────────────────── */
+  .head {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .head-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--mint);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .head h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.3;
+    color: var(--graphite);
+    margin: 0 0 10px;
+  }
+  .head h1 em { color: var(--coral); font-style: italic; }
+  .head p {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* ── DISCLAIMER ───────────────────────────────────── */
+  .disclaimer {
+    background: white;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--mint);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+  }
+
+  /* ── CARD PRINCIPAL ───────────────────────────────── */
+  .card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 28px 26px;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* progress */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .progress-label {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    font-weight: 700;
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--mint-soft);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--coral);
+    width: 0%;
+    transition: width 0.35s ease;
+  }
+
+  /* question */
+  .q-screen { display: none; flex-direction: column; flex: 1; }
+  .q-screen.active { display: flex; }
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--graphite);
+    margin-bottom: 26px;
+  }
+
+  .scale-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .scale-opt {
+    flex: 1;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: var(--coral-tint);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    transition: all 0.15s ease;
+  }
+  .scale-opt:hover { border-color: var(--coral); }
+  .scale-opt.selected {
+    background: var(--coral);
+    border-color: var(--coral);
+    color: white;
+    transform: scale(1.08);
+  }
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: auto;
+  }
+  .scale-labels span:last-child { text-align: right; }
+
+  /* nav buttons */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .btn {
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+  }
+  .btn-ghost:hover:not(:disabled) { color: var(--graphite); }
+  .btn-primary {
+    background: var(--coral);
+    color: white;
+  }
+  .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+
+  /* ── RESULTADO ────────────────────────────────────── */
+  .result-screen { display: none; flex-direction: column; }
+  .result-screen.active { display: flex; }
+
+  .gauge-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .gauge-label-row .mint-text { color: var(--mint); }
+  .gauge-label-row .coral-text { color: var(--coral); }
+
+  .gauge-track {
+    position: relative;
+    height: 10px;
+    border-radius: 10px;
+    background: linear-gradient(to right, var(--mint-soft), var(--coral-soft));
+    margin-bottom: 6px;
+  }
+  .gauge-marker {
+    position: absolute;
+    top: -7px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--graphite);
+    border: 3px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    transform: translateX(-50%);
+    transition: left 0.6s ease;
+  }
+
+  .result-score {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 18px 0 22px;
+  }
+  .result-score strong { color: var(--graphite); }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--coral);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .result-text {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .result-note {
+    background: var(--mint-tint);
+    border-radius: 6px;
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+
+  .result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-block {
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+  }
+  .btn-outline {
+    background: white;
+    border: 1.5px solid var(--coral);
+    color: var(--coral);
+  }
+  .btn-outline:hover { background: var(--coral-tint); }
+
+  .citation {
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-soft);
+    opacity: 0.7;
+    margin-top: 22px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 420px) {
+    .scale-opt { font-size: 11px; }
+    .card { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="head">
+    <div class="head-eyebrow">autorreflexão guiada</div>
+    <h1>Como você costuma <em>decidir</em>?</h1>
+    <p>12 afirmações inspiradas na pesquisa de Barry Schwartz sobre estilos de decisão. Leva cerca de 3 minutos.</p>
+  </div>
+
+  <div class="disclaimer">
+    Este é um instrumento de autorreflexão, adaptado livremente a partir dos construtos descritos por Schwartz et al. (2002). Não é uma escala validada em português nem um instrumento diagnóstico. Não existe resultado "certo" ou "errado", apenas um retrato do seu padrão atual de decisão.
+  </div>
+
+  <div class="card">
+
+    <div class="progress-row" id="progressRow">
+      <div class="progress-label" id="progressLabel">1 / 12</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div id="questionsContainer"></div>
+
+    <div class="result-screen" id="resultScreen">
+
+      <div class="gauge-label-row">
+        <span class="mint-text">satisficer</span>
+        <span class="coral-text">maximizador</span>
+      </div>
+      <div class="gauge-track">
+        <div class="gauge-marker" id="gaugeMarker" style="left:50%;"></div>
+      </div>
+
+      <div class="result-score">Sua média: <strong id="scoreValue">0</strong> em uma escala de 1 a 7</div>
+
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-text" id="resultText"></div>
+
+      <div class="result-note">
+        Lembre-se: isso descreve uma tendência de resposta neste momento, não um traço fixo nem um diagnóstico. A forma como você decide pode mudar conforme o contexto, o nível de cansaço e o que está em jogo na escolha.
+      </div>
+
+      <div class="result-actions">
+        <button class="btn btn-outline btn-block" id="restartBtn">Refazer o teste</button>
+      </div>
+
+      <div class="citation">
+        Baseado nos construtos descritos em Schwartz, B., Ward, A., Monterosso, J., Lyubomirsky, S., White, K., &amp; Lehman, D. R. (2002). Maximizing versus satisficing: Happiness is a matter of choice. <em>Journal of Personality and Social Psychology, 83</em>(5), 1178&ndash;1197.
+      </div>
+
+    </div>
+
+    <div class="nav-row" id="navRow">
+      <button class="btn btn-ghost" id="prevBtn">Voltar</button>
+      <button class="btn btn-primary" id="nextBtn" disabled>Próxima</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const questions = [
+    "Mesmo depois de decidir algo, costumo continuar pensando se a outra opção não teria sido melhor.",
+    "Tenho dificuldade em escolher o que assistir, porque fico imaginando que outro programa poderia ser mais interessante.",
+    "Antes de comprar algo, mesmo pequeno, costumo pesquisar várias opções antes de me sentir segura.",
+    "Quando estou numa fila, reparo nas outras filas e me pergunto se teriam sido mais rápidas.",
+    "Escrever uma mensagem simples pode me tomar mais tempo do que deveria, porque reviso as palavras várias vezes.",
+    "Tenho dificuldade em me contentar com uma segunda melhor opção, mesmo quando ela resolveria bem o problema.",
+    "Imagino com frequência como minha vida seria diferente se eu tivesse feito outras escolhas no passado.",
+    "Decisões pequenas do dia a dia, como o que pedir num restaurante, podem me deixar mais tensa do que eu gostaria.",
+    "Tenho padrões altos para mim mesma em praticamente tudo que faço.",
+    "Depois de tomar uma decisão, costumo me comparar com pessoas que escolheram diferente.",
+    "Adiar uma decisão pequena por falta de certeza absoluta é algo que acontece comigo com frequência.",
+    "Mesmo satisfeita com uma escolha, uma parte de mim continua se perguntando se existia uma opção melhor."
+  ];
+
+  const labels = { low: "discordo totalmente", high: "concordo totalmente" };
+
+  const container = document.getElementById('questionsContainer');
+  const answers = new Array(questions.length).fill(null);
+  let current = 0;
+
+  questions.forEach((text, i) => {
+    const screen = document.createElement('div');
+    screen.className = 'q-screen' + (i === 0 ? ' active' : '');
+    screen.dataset.index = i;
+
+    const qText = document.createElement('div');
+    qText.className = 'q-text';
+    qText.textContent = text;
+    screen.appendChild(qText);
+
+    const scaleRow = document.createElement('div');
+    scaleRow.className = 'scale-row';
+    for (let v = 1; v <= 7; v++) {
+      const opt = document.createElement('div');
+      opt.className = 'scale-opt';
+      opt.textContent = v;
+      opt.dataset.value = v;
+      opt.addEventListener('click', () => selectAnswer(i, v, opt));
+      scaleRow.appendChild(opt);
+    }
+    screen.appendChild(scaleRow);
+
+    const scaleLabels = document.createElement('div');
+    scaleLabels.className = 'scale-labels';
+    scaleLabels.innerHTML = '<span>' + labels.low + '</span><span>' + labels.high + '</span>';
+    screen.appendChild(scaleLabels);
+
+    container.appendChild(screen);
+  });
+
+  function selectAnswer(qIndex, value, el) {
+    answers[qIndex] = value;
+    const screen = container.querySelector('.q-screen[data-index="' + qIndex + '"]');
+    screen.querySelectorAll('.scale-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('nextBtn').disabled = false;
+  }
+
+  function updateProgress() {
+    document.getElementById('progressLabel').textContent = (current + 1) + ' / ' + questions.length;
+    document.getElementById('progressFill').style.width = ((current + 1) / questions.length * 100) + '%';
+  }
+
+  function showScreen(index) {
+    container.querySelectorAll('.q-screen').forEach(s => s.classList.remove('active'));
+    container.querySelector('.q-screen[data-index="' + index + '"]').classList.add('active');
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').textContent = index === questions.length - 1 ? 'Ver resultado' : 'Próxima';
+    document.getElementById('nextBtn').disabled = answers[index] === null;
+    updateProgress();
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (current < questions.length - 1) {
+      current++;
+      showScreen(current);
+    } else {
+      showResult();
+    }
+  });
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (current > 0) {
+      current--;
+      showScreen(current);
+    }
+  });
+
+  function showResult() {
+    const sum = answers.reduce((a, b) => a + b, 0);
+    const avg = sum / answers.length;
+    const avgRounded = Math.round(avg * 10) / 10;
+
+    document.getElementById('progressRow').style.display = 'none';
+    container.style.display = 'none';
+    document.getElementById('navRow').style.display = 'none';
+    document.getElementById('resultScreen').classList.add('active');
+
+    document.getElementById('scoreValue').textContent = avgRounded;
+    const percent = ((avg - 1) / 6) * 100;
+    document.getElementById('gaugeMarker').style.left = percent + '%';
+
+    let title, text;
+    if (avg < 3.3) {
+      title = 'Seu padrão parece mais próximo do satisficer';
+      text = 'Você costuma decidir e seguir em frente sem revisitar a escolha com frequência. Isso não significa que você tenha critério raso, significa que sua relação com a incerteza pós-decisão tende a ser mais leve. Vale observar se isso é consistente em todas as áreas da vida ou se varia conforme o que está em jogo.';
+    } else if (avg < 5) {
+      title = 'Você transita entre os dois perfis';
+      text = 'Seu padrão de resposta sugere que você maximiza em algumas situações e satisfaz em outras, provavelmente dependendo do quanto a decisão parece reversível ou do quanto ela toca em áreas mais sensíveis da sua história. Vale observar em quais contextos a busca pela opção perfeita aparece com mais força.';
+    } else {
+      title = 'Seu padrão parece mais próximo do maximizador';
+      text = 'Suas respostas sugerem uma tendência mais forte a buscar exaustivamente a melhor opção e a continuar comparando depois de decidir. Isso não é falta de confiança em você. Muitas vezes é uma forma aprendida de se proteger do arrependimento. Vale a pena observar o que essa busca pela escolha perfeita pode estar tentando evitar.';
+    }
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultText').textContent = text;
+  }
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    answers.fill(null);
+    current = 0;
+    container.querySelectorAll('.scale-opt').forEach(o => o.classList.remove('selected'));
+    document.getElementById('resultScreen').classList.remove('active');
+    document.getElementById('progressRow').style.display = 'flex';
+    container.style.display = 'block';
+    document.getElementById('navRow').style.display = 'flex';
+    showScreen(0);
+  });
+
+  showScreen(0);
+</script>
+
+</body>
+</html>
